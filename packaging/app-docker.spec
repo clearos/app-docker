@@ -22,6 +22,7 @@ Group: ClearOS/Libraries
 Requires: app-base-core
 Requires: app-network-core >= 1:2.4.2
 Requires: docker
+Requires: docker-compose
 
 %description core
 Docker description. TODO
@@ -70,7 +71,6 @@ exit 0
 %files
 %defattr(-,root,root)
 /usr/clearos/apps/docker/controllers
-/usr/clearos/apps/docker/htdocs
 /usr/clearos/apps/docker/views
 
 %files core

@@ -59,6 +59,9 @@ use \clearos\apps\base\Daemon as Daemon;
 
 clearos_load_library('base/Daemon');
 
+// FIXME
+require('httpful.phar');
+
 ///////////////////////////////////////////////////////////////////////////////
 // C L A S S
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,6 +84,16 @@ class Docker extends Daemon
     // C O N S T A N T S
     ///////////////////////////////////////////////////////////////////////////////
 
+    const STATE_EXITED = 'exited';
+    const STATE_RUNNING = 'running';
+    const STATE_CREATED = 'created';
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // V A R I A B L E S
+    ///////////////////////////////////////////////////////////////////////////////
+
+    var $status_mapping = [];
+
     ///////////////////////////////////////////////////////////////////////////////
     // M E T H O D S
     ///////////////////////////////////////////////////////////////////////////////
@@ -93,6 +106,71 @@ class Docker extends Daemon
     {
         clearos_profile(__METHOD__, __LINE__);
 
+        $this->state_mapping = [
+            self::STATE_EXITED => lang('docker_exited'),
+            self::STATE_RUNNING => lang('docker_running'),
+            self::STATE_CREATED => lang('docker_created')
+        ];
+
         parent::__construct('docker');
+    }
+
+    /**
+     * Returns list of containers.
+     *
+     * @param string $project project name
+     *
+     * @return void
+     * @throws Exception
+     */
+
+    public function get_containers($project = '')
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $url = 'http://127.0.0.1:2375/containers/json?all=1';
+
+        $response = \Httpful\Request::get($url)
+            ->expectsJson()
+            ->send();
+
+        $raw_result = $response->body;
+
+        $result = [];
+
+        foreach ($raw_result as $container) {
+            $result[$container->Id]['id'] = $container->Id;
+            $result[$container->Id]['status'] = $container->Status;
+
+            if (array_key_exists($container->State, $this->state_mapping))
+                $result[$container->Id]['state'] = $this->state_mapping[$container->State];
+            else
+                $result[$container->Id]['state'] = $container->State;
+
+            if ($container->Labels->{'com.docker.compose.project'})
+                $result[$container->Id]['project'] = $container->Labels->{'com.docker.compose.project'};
+            else
+                $result[$container->Id]['project'] = '';
+
+            if ($container->Labels->{'com.docker.compose.service'})
+                $result[$container->Id]['service'] = $container->Labels->{'com.docker.compose.service'};
+            else
+                $result[$container->Id]['service'] = '';
+        }
+
+        // Filter result by project
+        //-------------------------
+
+        if (empty($project))
+            return $result;
+
+        $filtered_result = [];
+
+        foreach ($result as $container) {
+            if ($container['project'] == $project)
+                $filtered_result[] = $container;
+        }
+
+        return $filtered_result;
     }
 }

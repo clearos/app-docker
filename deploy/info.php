@@ -52,6 +52,7 @@ $app['requires'] = array(
 $app['core_requires'] = array(
     'app-network-core >= 1:2.4.2',
     'docker',
+    'docker-compose',
 );
 
 $app['core_directory_manifest'] = array(
