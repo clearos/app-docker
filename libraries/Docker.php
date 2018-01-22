@@ -84,9 +84,11 @@ class Docker extends Daemon
     // C O N S T A N T S
     ///////////////////////////////////////////////////////////////////////////////
 
+    const STATE_DEAD = 'dead';
     const STATE_EXITED = 'exited';
-    const STATE_RUNNING = 'running';
+    const STATE_PAUSED = 'paused';
     const STATE_CREATED = 'created';
+    const STATE_RUNNING = 'running';
 
     ///////////////////////////////////////////////////////////////////////////////
     // V A R I A B L E S
@@ -107,9 +109,11 @@ class Docker extends Daemon
         clearos_profile(__METHOD__, __LINE__);
 
         $this->state_mapping = [
+            self::STATE_DEAD => lang('docker_dead'),
             self::STATE_EXITED => lang('docker_exited'),
-            self::STATE_RUNNING => lang('docker_running'),
-            self::STATE_CREATED => lang('docker_created')
+            self::STATE_PAUSED => lang('docker_paused'),
+            self::STATE_CREATED => lang('docker_created'),
+            self::STATE_RUNNING => lang('docker_running')
         ];
 
         parent::__construct('docker');
@@ -172,5 +176,22 @@ class Docker extends Daemon
         }
 
         return $filtered_result;
+    }
+
+    /**
+     * Stops a container.
+     *
+     * @param string $id container ID
+     *
+     * @return void
+     * @throws Exception
+     */
+
+    public function stop_container($id)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        // FIXME: validate
+        $url = 'http://127.0.0.1:2375/containers/' . $id . '/stop';
     }
 }

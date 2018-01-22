@@ -9,3 +9,5 @@ $lang['docker_service'] = 'Service';
 $lang['docker_running'] = 'Running';
 $lang['docker_exited'] = 'Exited';
 $lang['docker_created'] = 'Created';
+$lang['docker_dead'] = 'Dead';
+$lang['docker_paused'] = 'Paused';
