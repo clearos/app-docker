@@ -7,7 +7,7 @@
  * @package    docker
  * @subpackage controllers
  * @author     ClearFoundation <developer@clearfoundation.com>
- * @copyright  2017 ClearFoundation
+ * @copyright  2018 ClearFoundation
  * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
  * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
  */
@@ -53,7 +53,7 @@ require clearos_app_base('base') . '/controllers/daemon.php';
  * @package    docker
  * @subpackage controllers
  * @author     ClearFoundation <developer@clearfoundation.com>
- * @copyright  2017 ClearFoundation
+ * @copyright  2018 ClearFoundation
  * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
  * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
  */

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Docker settings controller.
+ * Docker containers controller.
  *
  * @category   apps
  * @package    docker
@@ -34,7 +34,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Docker settings controller.
+ * Docker containers controller.
  *
  * @category   apps
  * @package    docker
@@ -45,63 +45,86 @@
  * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
  */
 
-class Settings extends ClearOS_Controller
+class Containers_Controller extends ClearOS_Controller
 {
+    protected $app = NULL;
+    protected $project = NULL;
+
     /**
-     * Docker settings controller
+     * Docker containers constructor.
+     *
+     * @param string $group group name app name
+     *
+     * @return view
+     */
+
+    function __construct($app, $project)
+    {
+        $this->app = $app;
+        $this->project = $project;
+    }
+
+    /**
+     * Docker containers controller.
      *
      * @return view
      */
 
     function index()
     {
-        $this->_common('view');
+        // Load dependencies
+        //------------------
+
+        $this->load->library('docker/Docker');
+        $this->lang->load('docker');
+
+        // Load views
+        //-----------
+
+        $data['app'] = $this->app;
+        $data['project'] = $this->project;
+
+        $this->page->view_form('docker/containers', $data, lang('docker_containers'), $options);
     }
 
     /**
-     * Edit view.
-     *
-     * @return view
+     * Returns list of containers.
      */
 
-    function edit()
-    {
-        $this->_common('edit');
-    }
-
-    /**
-     * View view.
-     *
-     * @return view
-     */
-
-    function view()
-    {
-        $this->_common('view');
-    }
-
-    /**
-     * Common view/edit handler.
-     *
-     * @param string $form_type form type
-     *
-     * @return view
-     */
-
-    function _common($form_type)
+    function listing()
     {
         // Load dependencies
         //------------------
 
         $this->load->library('docker/Docker');
         $this->lang->load('docker');
-        $this->lang->load('base');
 
-        $data['form_type'] = $form_type;
+        // Load data
+        //----------
 
-        // Load views
-        //-----------
+        try {
+            $containers = $this->docker->get_containers($this->project);
+        } catch (Exception $e) {
+            $this->page->view_exception($e);
+            return;
+        }
 
-        $this->page->view_form('docker/settings', $data, lang('base_settings'));
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Content-type: application/json');
+
+        echo json_encode($containers);
+    }
+
+    /**
+     * Stops a container.
+     */
+
+    function stop($id)
+    {
+        // Load dependencies
+        //------------------
+
+        $this->load->library('docker/Docker');
+        $this->lang->load('docker');
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Docker server view.
+ * Docker containers view.
  *
  * @category   apps
  * @package    docker
- * @subpackage views
+ * @subpackage view
  * @author     ClearFoundation <developer@clearfoundation.com>
  * @copyright  2018 ClearFoundation
  * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
@@ -25,42 +25,43 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.  
-//  
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // Load dependencies
 ///////////////////////////////////////////////////////////////////////////////
 
-$this->lang->load('base');
 $this->lang->load('docker');
 
 ///////////////////////////////////////////////////////////////////////////////
-// Form handler
+// Headers
 ///////////////////////////////////////////////////////////////////////////////
 
-if ($form_type === 'edit') {
-    $read_only = FALSE;
-    $buttons = array(
-        form_submit_update('submit'),
-        anchor_cancel('/app/docker/settings'),
-    );
-} else {
-    $read_only = TRUE;
-    $buttons = array(
-        anchor_edit('/app/docker/settings/edit')
-    );
-}
+$headers = array(
+    lang('docker_service'),
+    lang('base_state'),
+    lang('base_status'),
+);
 
 ///////////////////////////////////////////////////////////////////////////////
-// Form
+// Summary table
 ///////////////////////////////////////////////////////////////////////////////
 
-echo form_open('docker/settings/edit');
-echo form_header(lang('base_settings'));
+$options['default_rows'] = 100;
+$options['paginate'] = FALSE;
+$options['id'] = 'containers_list';
 
-echo field_button_set($buttons);
+echo "<div id='docker_app' class='hide'>$app</div>";
+echo "<div id='docker_project' class='hide'>$project</div>";
 
-echo form_footer();
-echo form_close();
+echo "<div id='docker_containers' style='display: none'>";
+echo summary_table(
+    lang('docker_containers'),
+    $anchors,
+    $headers,
+    [],
+    $options
+);
+echo "</div>";
