@@ -51,12 +51,11 @@ header('Content-Type:application/x-javascript');
 
 $(document).ready(function() {
     $('a').click(function (e) {
-console.log('wah');
         e.preventDefault();
         if (e.target.href == undefined)
             return;
 
-        var service = e.target.href.substring((e.target.href.lastIndexOf('/') + 1));
+//        var service = e.target.href.substring((e.target.href.lastIndexOf('/') + 1));
 console(service);
     });
 
@@ -78,7 +77,7 @@ function getContainerStatus() {
         dataType: 'json',
         success : function(payload) {
             showContainerStatus(app, payload);
-        //    window.setTimeout(getContainerStatus, 3000);
+            window.setTimeout(getContainerStatus, 3000);
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             window.setTimeout(getContainerStatus, 3000);
