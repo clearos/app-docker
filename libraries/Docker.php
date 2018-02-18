@@ -7,7 +7,7 @@
  * @package    docker
  * @subpackage libraries
  * @author     ClearFoundation <developer@clearfoundation.com>
- * @copyright  2017 ClearFoundation
+ * @copyright  2017-2018 ClearFoundation
  * @license    http://www.gnu.org/copyleft/lgpl.html GNU Lesser General Public License version 3 or later
  * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
  */
@@ -52,15 +52,11 @@ clearos_load_language('docker');
 // D E P E N D E N C I E S
 ///////////////////////////////////////////////////////////////////////////////
 
-// Classes
-//--------
-
 use \clearos\apps\base\Daemon as Daemon;
+use \clearos\apps\base\Shell as Shell;
 
 clearos_load_library('base/Daemon');
-
-// FIXME
-require('httpful.phar');
+clearos_load_library('base/Shell');
 
 ///////////////////////////////////////////////////////////////////////////////
 // C L A S S
@@ -73,7 +69,7 @@ require('httpful.phar');
  * @package    docker
  * @subpackage libraries
  * @author     ClearFoundation <developer@clearfoundation.com>
- * @copyright  2017 ClearFoundation
+ * @copyright  2017-2018 ClearFoundation
  * @license    http://www.gnu.org/copyleft/lgpl.html GNU Lesser General Public License version 3 or later
  * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
  */
@@ -89,6 +85,7 @@ class Docker extends Daemon
     const STATE_PAUSED = 'paused';
     const STATE_CREATED = 'created';
     const STATE_RUNNING = 'running';
+    const COMMAND_CURL = '/usr/bin/curl';
 
     ///////////////////////////////////////////////////////////////////////////////
     // V A R I A B L E S
@@ -132,13 +129,15 @@ class Docker extends Daemon
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        $url = 'http://127.0.0.1:2375/containers/json?all=1';
+        // Note: this can be replace with a native PHP 7 call in the future.
+        // See CURLOPT_UNIX_SOCKET_PATH
 
-        $response = \Httpful\Request::get($url)
-            ->expectsJson()
-            ->send();
+        $params = '-s --unix-socket /var/run/docker.sock -X GET http:/containers/json?all=1';
 
-        $raw_result = $response->body;
+        $shell = new Shell();
+        $shell->execute(self::COMMAND_CURL, $params, TRUE);
+
+        $raw_result = json_decode(implode($shell->get_output()));
 
         $result = [];
 
@@ -176,22 +175,5 @@ class Docker extends Daemon
         }
 
         return $filtered_result;
-    }
-
-    /**
-     * Stops a container.
-     *
-     * @param string $id container ID
-     *
-     * @return void
-     * @throws Exception
-     */
-
-    public function stop_container($id)
-    {
-        clearos_profile(__METHOD__, __LINE__);
-
-        // FIXME: validate
-        $url = 'http://127.0.0.1:2375/containers/' . $id . '/stop';
     }
 }
