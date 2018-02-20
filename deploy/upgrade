@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# Add sudoers
+#------------
+
+/usr/sbin/addsudo /usr/bin/curl app-docker-core
+
+# Disable subscription manager
+#-----------------------------
+
+CONFIGS=" search-disabled-repos.conf subscription-manager.conf product-id.conf"
+
+for CONFIG in $CONFIGS; do
+    CHECK=`grep ^enabled=1 "/etc/yum/pluginconf.d/$CONFIG" 2>/dev/null`
+    if [ -n "$CHECK" ]; then
+        logger -p local6.notice -t installer "app-docker - updating yum plugin: $CONFIG"
+        sed -i -e 's/^enabled=1/^enabled=0/' "/etc/yum/pluginconf.d/$CONFIG"
+    fi
+done
+
+# Disable Docker firewall integration
+#------------------------------------
+
+if [ -e /etc/sysconfig/docker ]; then
+    CHECK=`grep "OPTIONS=.*iptables=false" /etc/sysconfig/docker`
+    if [ -z "$CHECK" ]; then
+        logger -p local6.notice -t installer "app-docker - disabling iptables integration"
+        sed -i -e "s/^OPTIONS='/OPTIONS='--iptables=false /" /etc/sysconfig/docker
+    fi
+fi

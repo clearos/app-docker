@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'docker';
-$app['version'] = '2.4.0';
+$app['version'] = '2.5.0';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -62,6 +62,9 @@ $app['core_directory_manifest'] = array(
 
 $app['core_file_manifest'] = array(
     'docker.php'=> array('target' => '/var/clearos/base/daemon/docker.php'),
+    '10-docker' => array(
+        'target' => '/etc/clearos/firewall.d/10-docker',
+    ),
 );
 
 $app['delete_dependency'] = array(
