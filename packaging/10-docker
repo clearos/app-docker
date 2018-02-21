@@ -45,6 +45,8 @@ done
 
 $IPTABLES -t filter -A DOCKER-ISOLATION -j RETURN
 
-$IPTABLES -t filter -A INPUT -i docker0 -j ACCEPT
-
-$IPTABLES -t filter -A OUTPUT -o docker0 -j ACCEPT
+for IFACE in $DOCKER_INTERFACES; do
+    $IPTABLES -t filter -A INPUT -i $IFACE -j ACCEPT
+    $IPTABLES -t filter -A OUTPUT -o $IFACE -j ACCEPT
+    $IPTABLES -t filter -A FORWARD -i $IFACE -j ACCEPT
+done
