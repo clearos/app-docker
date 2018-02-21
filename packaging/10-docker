@@ -1,14 +1,48 @@
+# Docker interfaces
+#------------------
+
+DOCKER_INTERFACES=`ip addr | grep ^[0-9] | awk '{ print $2 }' | sed 's/:$//' | grep ^br-`
+DOCKER_INTERFACES="docker0 $DOCKER_INTERFACES"
+
+# Docker chains
+#--------------
+
+$IPTABLES -t nat -N DOCKER 2>/dev/null
+$IPTABLES -t filter -N DOCKER 2>/dev/null
+$IPTABLES -t filter -N DOCKER-ISOLATION 2>/dev/null
+
+# NAT table
+#----------
 
 $IPTABLES -t nat -A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
 $IPTABLES -t nat -A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
-$IPTABLES -t nat -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
-$IPTABLES -t nat -A DOCKER -i docker0 -j RETURN
+for IFACE in $DOCKER_INTERFACES; do
+    IFACE_NETWORK=`ip addr show $IFACE | grep ^[[:space:]]*inet[[:space:]] | awk '{ print $2 }'`
+    $IPTABLES -t nat -A POSTROUTING -s $IFACE_NETWORK ! -o $IFACE -j MASQUERADE
+done
+for IFACE in $DOCKER_INTERFACES; do
+    $IPTABLES -t nat -A DOCKER -i $IFACE -j RETURN
+done
+
+# Filter table
+#-------------
 
 $IPTABLES -t filter -A FORWARD -j DOCKER-ISOLATION
-$IPTABLES -t filter -A FORWARD -o docker0 -j DOCKER
-$IPTABLES -t filter -A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-$IPTABLES -t filter -A FORWARD -i docker0 ! -o docker0 -j ACCEPT
-$IPTABLES -t filter -A FORWARD -i docker0 -o docker0 -j ACCEPT
+for IFACE in $DOCKER_INTERFACES; do
+    $IPTABLES -t filter -A FORWARD -o $IFACE -j DOCKER
+    $IPTABLES -t filter -A FORWARD -o $IFACE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    $IPTABLES -t filter -A FORWARD -i $IFACE ! -o $IFACE -j ACCEPT
+    $IPTABLES -t filter -A FORWARD -i $IFACE -o $IFACE -j ACCEPT
+done
+
+for IFACE_OUTER in $DOCKER_INTERFACES; do
+    for IFACE_INNER in $DOCKER_INTERFACES; do
+        if [ "$IFACE_INNER" != "$IFACE_OUTER" ]; then
+            $IPTABLES -A DOCKER-ISOLATION -i $IFACE_INNER -o $IFACE_OUTER -j DROP
+        fi
+    done
+done
+
 $IPTABLES -t filter -A DOCKER-ISOLATION -j RETURN
 
 $IPTABLES -t filter -A INPUT -i docker0 -j ACCEPT
