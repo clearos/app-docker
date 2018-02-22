@@ -1,7 +1,7 @@
 
 Name: app-docker
 Epoch: 1
-Version: 2.5.0
+Version: 2.5.1
 Release: 1%{dist}
 Summary: Docker
 License: GPLv3
@@ -13,7 +13,7 @@ Requires: app-base
 Requires: app-network
 
 %description
-Docker description. TODO
+Docker is a software technology providing operating-system-level virtualization also known as containers.
 
 %package core
 Summary: Docker - Core
@@ -26,7 +26,7 @@ Requires: docker
 Requires: docker-compose
 
 %description core
-Docker description. TODO
+Docker is a software technology providing operating-system-level virtualization also known as containers.
 
 This package provides the core API and libraries.
 
@@ -73,6 +73,7 @@ exit 0
 %files
 %defattr(-,root,root)
 /usr/clearos/apps/docker/controllers
+/usr/clearos/apps/docker/htdocs
 /usr/clearos/apps/docker/views
 
 %files core

@@ -40,7 +40,7 @@
  * @package    docker
  * @subpackage controllers
  * @author     ClearFoundation <developer@clearfoundation.com>
- * @copyright  2017 ClearFoundation
+ * @copyright  2018 ClearFoundation
  * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
  * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
  */
@@ -63,7 +63,7 @@ class Docker extends ClearOS_Controller
         // Load views
         //-----------
 
-        $views = array('docker/server', 'docker/settings');
+        $views = array('docker/server');
 
         $this->page->view_forms($views, lang('docker_app_name'));
     }

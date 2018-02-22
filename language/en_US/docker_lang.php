@@ -1,6 +1,6 @@
 <?php
 
-$lang['docker_app_description'] = 'Docker description. TODO';
+$lang['docker_app_description'] = 'Docker is a software technology providing operating-system-level virtualization also known as containers.';
 $lang['docker_app_name'] = 'Docker';
 $lang['docker_container'] = 'Container';
 $lang['docker_containers'] = 'Containers';

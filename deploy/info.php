@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'docker';
-$app['version'] = '2.5.0';
+$app['version'] = '2.5.1';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -32,14 +32,7 @@ $app['powered_by'] = array(
 $app['name'] = lang('docker_app_name');
 $app['category'] = lang('base_category_server');
 $app['subcategory'] = lang('base_subcategory_virtualization');
-
-/////////////////////////////////////////////////////////////////////////////
-// Controllers
-/////////////////////////////////////////////////////////////////////////////
-
-$app['controllers']['docker']['title'] = $app['name'];
-$app['controllers']['settings']['title'] = lang('base_settings');
-$app['controllers']['policy']['title'] = lang('base_app_policy');
+$app['menu_enabled'] = FALSE;
 
 /////////////////////////////////////////////////////////////////////////////
 // Packaging
