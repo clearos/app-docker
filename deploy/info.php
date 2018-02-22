@@ -51,6 +51,7 @@ $app['requires'] = array(
 
 $app['core_requires'] = array(
     'app-network-core >= 1:2.4.2',
+    'app-mail-routing-core',
     'docker',
     'docker-compose',
 );
@@ -70,4 +71,6 @@ $app['core_file_manifest'] = array(
 $app['delete_dependency'] = array(
     'app-docker-core',
     'docker',
+    'docker-common',
+    'docker-compose'
 );
