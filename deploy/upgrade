@@ -21,10 +21,17 @@ done
 # Disable Docker firewall integration
 #------------------------------------
 
-if [ -e /etc/sysconfig/docker ]; then
-    CHECK=`grep "OPTIONS=.*iptables=false" /etc/sysconfig/docker`
-    if [ -z "$CHECK" ]; then
-        logger -p local6.notice -t installer "app-docker - disabling iptables integration"
-        sed -i -e "s/^OPTIONS='/OPTIONS='--iptables=false /" /etc/sysconfig/docker
+if [ -e /etc/sysconfig/docker-network ]; then
+    CHECK=`grep "^DOCKER_NETWORK_OPTIONS=$" /etc/sysconfig/docker-network`
+    if [ -n "$CHECK" ]; then
+        logger -p local6.notice -t installer "app-docker - disabling iptables integration (init)"
+        sed -i -e "s/^DOCKER_NETWORK_OPTIONS=$/DOCKER_NETWORK_OPTIONS='--iptables=false'/" /etc/sysconfig/docker-network
+
+    else
+        CHECK=`grep "^DOCKER_NETWORK_OPTIONS=.*iptables=false" /etc/sysconfig/docker-network`
+        if [ -z "$CHECK" ]; then
+            logger -p local6.notice -t installer "app-docker - disabling iptables integration"
+            sed -i -e "s/^DOCKER_NETWORK_OPTIONS='/DOCKER_NETWORK_OPTIONS='--iptables=false /" /etc/sysconfig/docker-network
+        fi
     fi
 fi
