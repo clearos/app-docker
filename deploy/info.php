@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'docker';
-$app['version'] = '2.5.4';
+$app['version'] = '2.5.5';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -52,6 +52,7 @@ $app['core_requires'] = array(
 $app['core_directory_manifest'] = array(
     '/var/clearos/docker' => array(),
     '/var/clearos/docker/backup' => array(),
+    '/var/clearos/docker/project' => array(),
 );
 
 $app['core_file_manifest'] = array(

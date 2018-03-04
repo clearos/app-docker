@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Docker containers controller.
+ * Docker project controller.
  *
  * @category   apps
  * @package    docker
@@ -34,7 +34,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Docker containers controller.
+ * Docker project controller.
  *
  * @category   apps
  * @package    docker
@@ -45,13 +45,13 @@
  * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
  */
 
-class Containers_Controller extends ClearOS_Controller
+class Project_Controller extends ClearOS_Controller
 {
     protected $project_name = NULL;
     protected $app_name = NULL;
 
     /**
-     * Docker containers constructor.
+     * Docker project constructor.
      *
      * @param string $project_name project name
      * @param string $app_name     app that manages the docker project
@@ -66,7 +66,7 @@ class Containers_Controller extends ClearOS_Controller
     }
 
     /**
-     * Docker containers controller.
+     * Docker project controller.
      *
      * @return view
      */
@@ -76,42 +76,88 @@ class Containers_Controller extends ClearOS_Controller
         // Load dependencies
         //------------------
 
-        $this->load->library('docker/Docker');
-        $this->lang->load('docker');
+        $this->lang->load('base');
+
+        $data['project_name'] = $this->project_name;
+        $data['app_name'] = $this->app_name;
 
         // Load views
         //-----------
 
-        $data['app'] = $this->app_name;
-        $data['project'] = $this->project_name;
+        $options['javascript'] = array(clearos_app_htdocs('docker') . '/project.js.php');
 
-        $this->page->view_form('docker/containers', $data, lang('docker_containers'), $options);
+        $this->page->view_form('docker/project', $data, lang('base_server_status'), $options);
     }
 
     /**
-     * Returns list of containers.
+     * Project status.
+     *
+     * @return view
      */
 
-    function listing()
+    function status()
     {
-        // Load dependencies
-        //------------------
 
         $this->load->library('docker/Project', $this->project_name);
 
-        // Load data
-        //----------
+        $status['status'] = $this->project->get_status();
+
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Content-type: application/json');
+
+        echo json_encode($status);
+    }
+
+    /**
+     * Project start.
+     *
+     * @return view
+     */
+
+    function start()
+    {
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Content-type: application/json');
+
+        $this->load->library('docker/Project', $this->project_name);
+
+        // Shutdown project in case it is dead or in a funk (tracker #1239)
+        try {
+            $this->project->set_running_state(FALSE);
+        } catch (Exception $e) {
+            //
+        }
 
         try {
-            $containers = $this->project->get_listing();
+            $this->project->set_running_state(TRUE);
+    // FIXME
+    //        $this->project->set_boot_state(TRUE);
         } catch (Exception $e) {
-            $this->page->view_exception($e);
-            return;
+            //
+        }
+        echo json_encode('ok');
+    }
+
+    /**
+     * Project stop.
+     *
+     * @return view
+     */
+
+    function stop()
+    {
+        $this->load->library('docker/Project', $this->project_name);
+
+        try {
+            $this->project->set_running_state(FALSE);
+        // $this->project->set_boot_state(FALSE);
+        } catch (Exception $e) {
+            //
         }
 
         header('Cache-Control: no-cache, must-revalidate');
         header('Content-type: application/json');
 
-        echo json_encode($containers);
+        echo json_encode('ok');
     }
 }

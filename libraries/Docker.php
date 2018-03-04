@@ -120,12 +120,13 @@ class Docker extends Daemon
      * Returns list of containers.
      *
      * @param string $project project name
+     * @param array $ignore list of containers to ignore
      *
-     * @return void
+     * @return array list of containers
      * @throws Exception
      */
 
-    public function get_containers($project = '')
+    public function get_containers($project = '', $ignore = [])
     {
         clearos_profile(__METHOD__, __LINE__);
 
@@ -142,6 +143,10 @@ class Docker extends Daemon
         $result = [];
 
         foreach ($raw_result as $container) {
+            // Bail if it's a container we want to ignore
+            if ($container->Labels->{'com.docker.compose.service'} && in_array($container->Labels->{'com.docker.compose.service'}, $ignore))
+                continue;
+
             $result[$container->Id]['id'] = $container->Id;
             $result[$container->Id]['status'] = $container->Status;
 

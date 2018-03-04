@@ -50,15 +50,6 @@ header('Content-Type:application/x-javascript');
 ?>
 
 $(document).ready(function() {
-    $('a').click(function (e) {
-        e.preventDefault();
-        if (e.target.href == undefined)
-            return;
-
-//        var service = e.target.href.substring((e.target.href.lastIndexOf('/') + 1));
-console(service);
-    });
-
     if ($('#docker_containers').length != 0)
         getContainerStatus();
 });
@@ -91,15 +82,6 @@ function getContainerStatus() {
 
 function showContainerStatus(app, payload) {
 
-    // Translations
-    //-------------
-
-    lang_stop = '<?php echo lang("base_stop"); ?>';
-    lang_start = '<?php echo lang("base_start"); ?>';
-
-    // Load data
-    //----------
-
     $('#docker_containers').show();
 
     var anchor = '';
@@ -107,16 +89,10 @@ function showContainerStatus(app, payload) {
     table_updates_list.fnClearTable();
 
     for (var index = 0 ; index < payload.length; index++) {
-        if (payload[index].state == 'Running')
-            anchor = theme_anchor('/app/' + app + '/containers/stop/' + payload[index].id, lang_stop, {})
-        else
-            anchor = theme_anchor('/app/' + app + '/containers/start/' + payload[index].id, lang_start, {})
-
         table_updates_list.fnAddData([
             payload[index].service,
             payload[index].state,
             payload[index].status,
-            anchor
         ]);
     }
 

@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Docker containers view.
+ * Docker project view.
  *
  * @category   apps
  * @package    docker
- * @subpackage view
+ * @subpackage views
  * @author     ClearFoundation <developer@clearfoundation.com>
  * @copyright  2018 ClearFoundation
  * @license    http://www.gnu.org/copyleft/gpl.html GNU General Public License version 3 or later
@@ -25,7 +25,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -36,33 +36,9 @@
 $this->lang->load('docker');
 
 ///////////////////////////////////////////////////////////////////////////////
-// Headers
+// Form open
 ///////////////////////////////////////////////////////////////////////////////
 
-$headers = array(
-    lang('docker_service'),
-    lang('base_state'),
-    lang('base_status'),
-);
-
-///////////////////////////////////////////////////////////////////////////////
-// Summary table
-///////////////////////////////////////////////////////////////////////////////
-
-$options['default_rows'] = 100;
-$options['paginate'] = FALSE;
-$options['no_action'] = TRUE;
-$options['id'] = 'containers_list';
-
-echo "<div id='docker_app' class='hide'>$app</div>";
-echo "<div id='docker_project' class='hide'>$project</div>";
-
-echo "<div id='docker_containers' style='display: none'>";
-echo summary_table(
-    lang('docker_containers'),
-    $anchors,
-    $headers,
-    [],
-    $options
-);
-echo "</div>";
+echo "<input id='clearos_app_name' value='$app_name' type='hidden'>\n";
+echo "<input id='clearos_project_name' value='$project_name' type='hidden'>\n";
+echo "<input id='clearos_project_status_lock' value='off' type='hidden'>\n";
