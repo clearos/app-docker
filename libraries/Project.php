@@ -97,9 +97,9 @@ class Project extends Engine
     // C O N S T A N T S
     ///////////////////////////////////////////////////////////////////////////////
 
+    const COMMAND_COMPOSE = '/usr/bin/docker-compose';
     const STATE_RUNNING = 'Running';
     const PATH_CONFIGLET = '/var/clearos/docker/project';
-
     const STATUS_BUSY = 'busy';
     const STATUS_RUNNING = 'running';
     const STATUS_STARTING = 'starting';
@@ -138,6 +138,9 @@ class Project extends Engine
         if (file_exists($configlet_file)) {
             include $configlet_file;
             $this->details = $configlet;
+// FIXME
+$this->details['docker_compose_file'] = '/var/lib/clearglass/docker-compose.yml';
+$this->details['container_count'] = 19;
         } else {
             $this->details['ignore_list'] = [];
             $this->details['app_name'] = $project;
@@ -187,7 +190,12 @@ class Project extends Engine
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        return TRUE;
+        $status = $this->get_status();
+
+        if ($status == self::STATUS_RUNNING)
+            return TRUE;
+        else
+            return FALSE;
     }
 
     /**
@@ -224,6 +232,8 @@ class Project extends Engine
             $status = self::STATUS_BUSY;
         else if ($count == 0)
             $status = self::STATUS_STOPPED;
+        else if ($count < $this->details['container_count'])
+            $status = self::STATUS_BUSY;
         else
             $status = self::STATUS_RUNNING;
 
@@ -242,6 +252,17 @@ class Project extends Engine
     public function reset($background = FALSE)
     {
         clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_state($background));
+
+        $options['background'] = $background;
+
+        $shell = new Shell();
+        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' restart', TRUE, $options);
+
+        // Lame, but we need to give docker-compose some time to tear down
+        if ($background)
+            sleep(5);
     }
 
     /**
@@ -258,10 +279,17 @@ class Project extends Engine
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        $options['stdin'] = "use_popen";
+        Validation_Exception::is_valid($this->validate_state($background));
+
         $options['background'] = $background;
 
         $shell = new Shell();
+        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' down', TRUE);
+        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' up', TRUE, $options);
+
+        // Lame, but we need to give docker-compose some time to tear down
+        if ($background)
+            sleep(5);
     }
 
     /**
@@ -294,6 +322,15 @@ class Project extends Engine
         clearos_profile(__METHOD__, __LINE__);
 
         Validation_Exception::is_valid($this->validate_state($state));
+
+        $options['background'] = TRUE;
+        $command = ($state) ? 'up' : 'down';
+
+        $shell = new Shell();
+        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' ' . $command, TRUE, $options);
+
+        // Lame, but we need to give docker-compose some time to tear down
+        sleep(5);
     }
 
     ///////////////////////////////////////////////////////////////////////////////

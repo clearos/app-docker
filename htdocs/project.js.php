@@ -197,7 +197,7 @@ function clearosShowProjectStatus(payload) {
         $(".theme-loading-small").css('background-position', '5 0');
     } else if (payload.status == 'busy') {
         $('#clearos_daemon_status').html(lang_busy + '<span class="theme-loading"></span>');
-        $("#clearos_daemon_action").html(lang_restart);
+        $("#clearos_daemon_action").html(lang_stop);
         $(".theme-loading-small").css('background-position', '5 0');
     } else if (payload.status == 'no_entries') {
         $("#clearos_daemon_status").html(lang_no_entries);
