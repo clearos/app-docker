@@ -138,14 +138,21 @@ class Project extends Engine
         if (file_exists($configlet_file)) {
             include $configlet_file;
             $this->details = $configlet;
-// FIXME
-$this->details['docker_compose_file'] = '/var/lib/clearglass/docker-compose.yml';
-$this->details['container_count'] = 19;
-        } else {
-            $this->details['ignore_list'] = [];
-            $this->details['app_name'] = $project;
-            $this->details['base_project'] = $project;
         }
+    }
+
+    /**
+     * Returns the app name associated with project.
+     *
+     * @return string app name
+     * @throws Engine_Exception
+     */
+
+    public function get_app_name()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        return $this->details['app_name'];
     }
 
     /**
@@ -216,6 +223,18 @@ $this->details['container_count'] = 19;
         clearos_profile(__METHOD__, __LINE__);
 
         $docker = new Docker();
+
+        // Bail if Docker is not running
+        //------------------------------
+
+        $is_running = $docker->get_running_state();
+
+        if (!$is_running)
+            return self::STATUS_STOPPED;
+
+        // Grab list of containers
+        //------------------------
+
         $containers = $docker->get_containers($this->details['base_project'], $this->details['ignore_list']);
 
         $count = 0;
@@ -285,7 +304,7 @@ $this->details['container_count'] = 19;
 
         $shell = new Shell();
         $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' down', TRUE);
-        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' up', TRUE, $options);
+        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' up -d', TRUE, $options);
 
         // Lame, but we need to give docker-compose some time to tear down
         if ($background)
@@ -323,8 +342,27 @@ $this->details['container_count'] = 19;
 
         Validation_Exception::is_valid($this->validate_state($state));
 
+        // Start Docker
+        //-------------
+
+        $docker = new Docker();
+
+        if (!$docker->get_running_state()) {
+            $docker->set_running_state(TRUE);
+            sleep(5);
+        }
+
+        // Docker login
+        //-------------
+
+        // FIXME
+
+
+        // Docker compose start
+        //---------------------
+
         $options['background'] = TRUE;
-        $command = ($state) ? 'up' : 'down';
+        $command = ($state) ? 'up -d' : 'down';
 
         $shell = new Shell();
         $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' ' . $command, TRUE, $options);

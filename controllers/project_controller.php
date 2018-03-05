@@ -48,21 +48,18 @@
 class Project_Controller extends ClearOS_Controller
 {
     protected $project_name = NULL;
-    protected $app_name = NULL;
 
     /**
      * Docker project constructor.
      *
      * @param string $project_name project name
-     * @param string $app_name     app that manages the docker project
      *
      * @return view
      */
 
-    function __construct($project_name, $app_name)
+    function __construct($project_name)
     {
         $this->project_name = $project_name;
-        $this->app_name = $app_name;
     }
 
     /**
@@ -76,10 +73,19 @@ class Project_Controller extends ClearOS_Controller
         // Load dependencies
         //------------------
 
+        $this->load->library('docker/Project', $this->project_name);
         $this->lang->load('base');
 
-        $data['project_name'] = $this->project_name;
-        $data['app_name'] = $this->app_name;
+        // Load data
+        //----------
+
+        try {
+            $data['app_name'] = $this->project->get_app_name();
+            $data['project_name'] = $this->project_name;
+        } catch (Exception $e) {
+            $this->page->view_exception($e);
+            return;
+        }
 
         // Load views
         //-----------

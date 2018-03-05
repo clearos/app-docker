@@ -48,21 +48,18 @@
 class Containers_Controller extends ClearOS_Controller
 {
     protected $project_name = NULL;
-    protected $app_name = NULL;
 
     /**
      * Docker containers constructor.
      *
      * @param string $project_name project name
-     * @param string $app_name     app that manages the docker project
      *
      * @return view
      */
 
-    function __construct($project_name, $app_name)
+    function __construct($project_name)
     {
         $this->project_name = $project_name;
-        $this->app_name = $app_name;
     }
 
     /**
@@ -76,14 +73,22 @@ class Containers_Controller extends ClearOS_Controller
         // Load dependencies
         //------------------
 
-        $this->load->library('docker/Docker');
+        $this->load->library('docker/Project', $this->project_name);
         $this->lang->load('docker');
+
+        // Load data
+        //----------
+
+        try {
+            $data['app'] = $this->project->get_app_name();
+            $data['project'] = $this->project_name;
+        } catch (Exception $e) {
+            $this->page->view_exception($e);
+            return;
+        }
 
         // Load views
         //-----------
-
-        $data['app'] = $this->app_name;
-        $data['project'] = $this->project_name;
 
         $this->page->view_form('docker/containers', $data, lang('docker_containers'), $options);
     }
