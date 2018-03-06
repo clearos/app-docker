@@ -177,31 +177,39 @@ function clearosShowProjectStatus(payload) {
     if (payload.status == 'running') {
         $("#clearos_daemon_status").html(lang_running);
         $("#clearos_daemon_action").html(lang_stop);
+        $("#clearos_container_running").show();
     } else if (payload.status == 'stopped') {
         $("#clearos_daemon_status").html("<span class='theme-stopped-daemon'>" + lang_stopped + "</span>");
         $("#clearos_daemon_action").html(lang_start);
+        $("#clearos_container_running").hide();
     } else if (payload.status == 'dead') {
         $("#clearos_daemon_status").html("<span class='theme-dead-daemon'>" + lang_dead + "</span>");
         $("#clearos_daemon_action").html(lang_start);
+        $("#clearos_container_running").hide();
     } else if (payload.status == 'starting') {
         $('#clearos_daemon_status').html(lang_starting + '<span class="theme-loading"></span>');
         $("#clearos_daemon_action").html('<span class="theme-loading-small" style="padding-right: 5px; height: 15px; margin-bottom: -5px;"></span>');
+        $("#clearos_container_running").hide();
         $(".theme-loading-small").css('background-position', '5 0');
     } else if (payload.status == 'stopping') {
         $('#clearos_daemon_status').html(lang_stopping + '<span class="theme-loading"></span>');
         $("#clearos_daemon_action").html('<span class="theme-loading-small" style="padding-right: 5px; height: 15px; margin-bottom: -5px;"></span>');
+        $("#clearos_container_running").hide();
         $(".theme-loading-small").css('background-position', '5 0');
     } else if (payload.status == 'restarting') {
         $('#clearos_daemon_status').html(lang_restarting + '<span class="theme-loading"></span>');
         $("#clearos_daemon_action").html('<span class="theme-loading-small" style="padding-right: 5px; height: 15px; margin-bottom: -5px;"></span>');
+        $("#clearos_container_running").hide();
         $(".theme-loading-small").css('background-position', '5 0');
     } else if (payload.status == 'busy') {
         $('#clearos_daemon_status').html(lang_busy + '<span class="theme-loading"></span>');
         $("#clearos_daemon_action").html(lang_stop);
+        $("#clearos_container_running").hide();
         $(".theme-loading-small").css('background-position', '5 0');
     } else if (payload.status == 'no_entries') {
         $("#clearos_daemon_status").html(lang_no_entries);
         $("#clearos_daemon_action_row").css('display', 'none');
+        $("#clearos_container_running").hide();
     }
 }
 
