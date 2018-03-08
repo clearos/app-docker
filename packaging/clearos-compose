@@ -1,0 +1,88 @@
+#!/usr/clearos/sandbox/usr/bin/php
+<?php
+
+/**
+ * Docker compose wrapper for firewall handling.
+ *
+ * @category   apps
+ * @package    docker
+ * @subpackage scripts
+ * @author     ClearFoundation <developer@clearfoundation.com>
+ * @copyright  2018 ClearFoundation
+ * @license    http://www.gnu.org/copyleft/lgpl.html GNU Lesser General Public License version 3 or later
+ * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
+ */
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// B O O T S T R A P
+///////////////////////////////////////////////////////////////////////////////
+
+$bootstrap = getenv('CLEAROS_BOOTSTRAP') ? getenv('CLEAROS_BOOTSTRAP') : '/usr/clearos/framework/shared';
+require_once $bootstrap . '/bootstrap.php';
+
+///////////////////////////////////////////////////////////////////////////////
+// D E P E N D E N C I E S
+///////////////////////////////////////////////////////////////////////////////
+
+use \clearos\apps\docker\Project as Project;
+
+clearos_load_library('docker/Project');
+
+///////////////////////////////////////////////////////////////////////////////
+// O P T I O N S
+///////////////////////////////////////////////////////////////////////////////
+
+$short_options = '';
+$short_options .= 'p:'; // Project
+$short_options .= 'a:'; // Project
+$short_options .= 'h';  // Help
+
+$help_options  = '';
+$help_options .= "  -p: Project - e.g. clearglass\n";
+$help_options .= "  -a: Action - up or down\n";
+$help_options .= "\n";
+$help_options .= "  -h: Help\n";
+
+$options = getopt($short_options);
+
+$help = isset($options['h']) ? TRUE : FALSE;
+$project = isset($options['p']) ? $options['p'] : '';
+$action = isset($options['a']) ? $options['a'] : '';
+
+///////////////////////////////////////////////////////////////////////////////
+// M A I N
+///////////////////////////////////////////////////////////////////////////////
+
+// Basic usage stuff
+//------------------
+
+if ($help || empty($action) || empty($project)) {
+    echo "usage: " . $argv[0] . " [options]\n";
+    echo $help_options;
+    exit(0);
+}
+
+
+$project = new Project($project);
+
+if ($action == 'up')
+    $project->_set_running_state(TRUE);
+else if ($action == 'down')
+    $project->_set_running_state(FALSE);

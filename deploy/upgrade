@@ -5,6 +5,7 @@
 
 /usr/sbin/addsudo /usr/bin/curl app-docker-core
 /usr/sbin/addsudo /usr/bin/docker-compose app-docker-core
+/usr/sbin/addsudo /usr/sbin/clearos-compose app-docker-core
 
 # Disable subscription manager
 #-----------------------------

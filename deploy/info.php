@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'docker';
-$app['version'] = '2.5.6';
+$app['version'] = '2.5.7';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -60,6 +60,10 @@ $app['core_file_manifest'] = array(
     'docker.php'=> array('target' => '/var/clearos/base/daemon/docker.php'),
     '10-docker' => array(
         'target' => '/etc/clearos/firewall.d/10-docker',
+    ),
+    'clearos-compose'=> array(
+        'target' => '/usr/sbin/clearos-compose',
+        'mode' => '0755'
     ),
 );
 

@@ -1,7 +1,7 @@
 
 Name: app-docker
 Epoch: 1
-Version: 2.5.6
+Version: 2.5.7
 Release: 1%{dist}
 Summary: Docker
 License: GPLv3
@@ -43,6 +43,7 @@ install -d -m 0755 %{buildroot}/var/clearos/docker
 install -d -m 0755 %{buildroot}/var/clearos/docker/backup
 install -d -m 0755 %{buildroot}/var/clearos/docker/project
 install -D -m 0644 packaging/10-docker %{buildroot}/etc/clearos/firewall.d/10-docker
+install -D -m 0755 packaging/clearos-compose %{buildroot}/usr/sbin/clearos-compose
 install -D -m 0644 packaging/docker.php %{buildroot}/var/clearos/base/daemon/docker.php
 
 %post
@@ -90,4 +91,5 @@ exit 0
 /usr/clearos/apps/docker/language
 /usr/clearos/apps/docker/libraries
 /etc/clearos/firewall.d/10-docker
+/usr/sbin/clearos-compose
 /var/clearos/base/daemon/docker.php

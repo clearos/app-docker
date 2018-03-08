@@ -122,25 +122,17 @@ class Project_Controller extends ClearOS_Controller
 
     function start()
     {
-        header('Cache-Control: no-cache, must-revalidate');
-        header('Content-type: application/json');
-
         $this->load->library('docker/Project', $this->project_name);
-
-        // Shutdown project in case it is dead or in a funk (tracker #1239)
-        try {
-            $this->project->set_running_state(FALSE);
-        } catch (Exception $e) {
-            //
-        }
 
         try {
             $this->project->set_running_state(TRUE);
-    // FIXME
-    //        $this->project->set_boot_state(TRUE);
         } catch (Exception $e) {
             //
         }
+
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Content-type: application/json');
+
         echo json_encode('ok');
     }
 
@@ -156,7 +148,6 @@ class Project_Controller extends ClearOS_Controller
 
         try {
             $this->project->set_running_state(FALSE);
-        // $this->project->set_boot_state(FALSE);
         } catch (Exception $e) {
             //
         }

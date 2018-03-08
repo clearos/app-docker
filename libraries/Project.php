@@ -61,12 +61,14 @@ use \clearos\apps\base\File as File;
 use \clearos\apps\base\Shell as Shell;
 use \clearos\apps\docker\Docker as Docker;
 use \clearos\apps\docker\Project as Project;
+use \clearos\apps\firewall\Firewall as Firewall;
 
 clearos_load_library('base/Engine');
 clearos_load_library('base/File');
 clearos_load_library('base/Shell');
 clearos_load_library('docker/Docker');
 clearos_load_library('docker/Project');
+clearos_load_library('firewall/Firewall');
 
 // Exceptions
 //-----------
@@ -98,6 +100,7 @@ class Project extends Engine
     ///////////////////////////////////////////////////////////////////////////////
 
     const COMMAND_COMPOSE = '/usr/bin/docker-compose';
+    const COMMAND_CLEAROS_COMPOSE = '/usr/sbin/clearos-compose';
     const STATE_RUNNING = 'Running';
     const PATH_CONFIGLET = '/var/clearos/docker/project';
     const STATUS_BUSY = 'busy';
@@ -312,22 +315,6 @@ class Project extends Engine
     }
 
     /**
-     * Sets the boot state of the project.
-     *
-     * @param boolean $state desired boot state
-     *
-     * @return void
-     * @throws Engine_Exception, Validation_Exception
-     */
-
-    public function set_boot_state($state)
-    {
-        clearos_profile(__METHOD__, __LINE__);
-
-        Validation_Exception::is_valid($this->validate_state($state));
-    }
-
-    /**
      * Sets running state of the project.
      *
      * @param boolean $state desired running state
@@ -336,39 +323,18 @@ class Project extends Engine
      * @throws Engine_Exception, Validation_Exception
      */
 
-    public function set_running_state($state)
+    public function set_running_state($state, $background = TRUE)
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        Validation_Exception::is_valid($this->validate_state($state));
-
-        // Start Docker
-        //-------------
-
-        $docker = new Docker();
-
-        if (!$docker->get_running_state()) {
-            $docker->set_running_state(TRUE);
-            sleep(5);
-        }
-
-        // Docker login
-        //-------------
-
-        // FIXME
-
-
-        // Docker compose start
-        //---------------------
-
-        $options['background'] = TRUE;
+        $options['background'] = $background;
         $command = ($state) ? 'up -d' : 'down';
 
         $shell = new Shell();
-        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' ' . $command, TRUE, $options);
+        $shell->execute(self::COMMAND_CLEAROS_COMPOSE, '-p ' . $this->project . ' -a ' . $command, TRUE, $options);
 
-        // Lame, but we need to give docker-compose some time to tear down
-        sleep(5);
+        if ($background)
+            sleep(5);
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -389,5 +355,74 @@ class Project extends Engine
 
         if (! is_bool($state))
             return lang('base_parameter_invalid');
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // P R I V A T E  M E T H O D S
+    ///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Sets running state of the project via wrapper.
+     *
+     * This should only be called by the 
+     *
+     * @param boolean $state desired running state
+     *
+     * @return void
+     * @throws Engine_Exception, Validation_Exception
+     */
+
+    public function _set_running_state($state)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        Validation_Exception::is_valid($this->validate_state($state));
+
+        // Start Docker
+        //-------------
+
+        $docker = new Docker();
+
+        if (!$docker->get_running_state()) {
+            $docker->set_running_state(TRUE);
+            $docker->set_boot_state(TRUE);
+            sleep(5);
+        }
+
+        // Docker login
+        //-------------
+
+        // FIXME
+
+
+        // Docker compose start/stop
+        //--------------------------
+
+        $command = ($state) ? 'up -d' : 'down';
+
+        $shell = new Shell();
+
+        if ($state) {
+            try {
+                // On start, make sure everything is really shutdown.
+                $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' down', TRUE);
+            } catch (Exception $e) {
+                // Not fatal
+            }
+        }
+
+        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' ' . $command, TRUE);
+
+        // Lame, but we need to give docker-compose some time to tear down
+        sleep(5);
+
+        // Firewall
+        //---------
+        // TODO: we need to do a full restart for now.  Hopefully this will change in future Docker versions.
+
+        if ($state) {
+            $firewall = new Firewall();
+            $firewall->restart();
+        }
     }
 }
