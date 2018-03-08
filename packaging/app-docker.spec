@@ -22,6 +22,7 @@ Group: ClearOS/Libraries
 Requires: app-base-core
 Requires: app-network-core >= 1:2.4.2
 Requires: app-mail-routing-core
+Requires: app-firewall-core
 Requires: docker
 Requires: docker-compose
 
