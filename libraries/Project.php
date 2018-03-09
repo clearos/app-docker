@@ -73,6 +73,7 @@ clearos_load_library('firewall/Firewall');
 // Exceptions
 //-----------
 
+use \Exception as Exception;
 use \clearos\apps\base\Validation_Exception as Validation_Exception;
 
 clearos_load_library('base/Validation_Exception');
@@ -285,6 +286,29 @@ class Project extends Engine
         // Lame, but we need to give docker-compose some time to tear down
         if ($background)
             sleep(5);
+    }
+
+    /**
+     * Restarts a container.
+     *
+     * @param string $container container name or ID
+     * @param string $compose_file docker compose file
+     *
+     * @see Project::reset()
+     * @return void
+     * @throws Engine_Exception
+     */
+
+    public static function restart_container($container, $compose_file)
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        try {
+            $shell = new Shell();
+            $shell->execute(self::COMMAND_COMPOSE, '-f ' . $compose_file . ' restart ' . $container, TRUE);
+        } catch (Exception $e) {
+            // Not fatal
+        }
     }
 
     /**
