@@ -46,6 +46,7 @@ $app['core_requires'] = array(
     'app-network-core >= 1:2.4.6',
     'app-mail-routing-core',
     'app-firewall-core',
+    'curl',
     'docker',
     'docker-compose',
 );

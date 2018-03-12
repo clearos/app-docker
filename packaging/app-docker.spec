@@ -23,6 +23,7 @@ Requires: app-base-core
 Requires: app-network-core >= 1:2.4.6
 Requires: app-mail-routing-core
 Requires: app-firewall-core
+Requires: curl
 Requires: docker
 Requires: docker-compose
 
