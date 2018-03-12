@@ -1,7 +1,7 @@
 
 Name: app-docker
 Epoch: 1
-Version: 2.5.8
+Version: 2.5.9
 Release: 1%{dist}
 Summary: Docker
 License: GPLv3
