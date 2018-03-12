@@ -106,7 +106,7 @@ class Docker extends Daemon
         clearos_profile(__METHOD__, __LINE__);
 
         $this->state_mapping = [
-            self::STATE_DEAD => lang('docker_dead'),
+            self::STATE_DEAD => lang('docker_stopped'),
             self::STATE_EXITED => lang('docker_exited'),
             self::STATE_PAUSED => lang('docker_paused'),
             self::STATE_CREATED => lang('docker_created'),
