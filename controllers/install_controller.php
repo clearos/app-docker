@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Docker containers controller.
+ * Docker project install controller.
  *
  * @category   apps
  * @package    docker
@@ -34,7 +34,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Docker containers controller.
+ * Docker project install controller.
  *
  * @category   apps
  * @package    docker
@@ -45,12 +45,12 @@
  * @link       http://www.clearfoundation.com/docs/developer/apps/docker/
  */
 
-class Containers_Controller extends ClearOS_Controller
+class Install_Controller extends ClearOS_Controller
 {
     protected $project_name = NULL;
 
     /**
-     * Docker containers constructor.
+     * Docker project install constructor.
      *
      * @param string $project_name project name
      *
@@ -63,7 +63,7 @@ class Containers_Controller extends ClearOS_Controller
     }
 
     /**
-     * Docker containers controller.
+     * Docker project install controller.
      *
      * @return view
      */
@@ -74,15 +74,13 @@ class Containers_Controller extends ClearOS_Controller
         //------------------
 
         $this->load->library('docker/Project', $this->project_name);
-        $this->lang->load('docker');
+        $this->lang->load('base');
 
         // Load data
         //----------
 
         try {
-            $data['app'] = $this->project->get_app_name();
-            $data['project'] = $this->project_name;
-            $is_installed = $this->project->is_installed();
+            $data['app_name'] = $this->project->get_app_name();
         } catch (Exception $e) {
             $this->page->view_exception($e);
             return;
@@ -91,36 +89,59 @@ class Containers_Controller extends ClearOS_Controller
         // Load views
         //-----------
 
-        if (! $is_installed)
-            return;
+        $options['javascript'] = array(clearos_app_htdocs('docker') . '/install.js.php');
 
-        $this->page->view_form('docker/containers', $data, lang('docker_containers'), $options);
+        $this->page->view_form('docker/install', $data, lang('base_install'), $options);
     }
 
     /**
-     * Returns list of containers.
+     * Docker project install start.
+     *
+     * @return void
      */
 
-    function listing()
+    function pull()
     {
         // Load dependencies
         //------------------
 
         $this->load->library('docker/Project', $this->project_name);
+        $this->project->pull();
+
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Content-type: application/json');
+    }
+
+    /**
+     * Docker project install status.
+     *
+     * @return JSON results
+     */
+
+    function status()
+    {
+        // Load dependencies
+        //------------------
+
+        $this->load->library('docker/Project', $this->project_name);
+        $this->lang->load('base');
 
         // Load data
         //----------
 
         try {
-            $containers = $this->project->get_listing();
+            $result = $this->project->get_install_status();
         } catch (Exception $e) {
-            $this->page->view_exception($e);
+            // FIXME
             return;
         }
+
+        // Load views
+        //-----------
 
         header('Cache-Control: no-cache, must-revalidate');
         header('Content-type: application/json');
 
-        echo json_encode($containers);
+        echo json_encode($result);
     }
 }

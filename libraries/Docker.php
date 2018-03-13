@@ -130,6 +130,8 @@ class Docker extends Daemon
     {
         clearos_profile(__METHOD__, __LINE__);
 
+        $this->_start();
+
         // Note: this can be replace with a native PHP 7 call in the future.
         // See CURLOPT_UNIX_SOCKET_PATH
 
@@ -180,5 +182,52 @@ class Docker extends Daemon
         }
 
         return $filtered_result;
+    }
+
+    /**
+     * Returns list of images.
+     *
+     * @param string $project project name
+     *
+     * @return array list of images
+     * @throws Exception
+     */
+
+    public function get_images($project = '')
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $this->_start();
+
+        $params = '-s --unix-socket /var/run/docker.sock -X GET http:/images/json?all=1';
+
+        $shell = new Shell();
+        $shell->execute(self::COMMAND_CURL, $params, TRUE);
+
+        $raw_result = json_decode(implode($shell->get_output()));
+        $images = [];
+
+        foreach ($raw_result as $image) {
+            foreach ($image->RepoTags as $tag)
+                $images[$tag]['created'] = $image->Created;
+        }
+
+        return $images;
+    }
+
+    /**
+     * Start Docker.
+     *
+     * @throws Exception
+     */
+
+    public function _start()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (!$this->get_running_state()) {
+            $this->set_running_state(TRUE);
+            sleep(2);
+        }
     }
 }

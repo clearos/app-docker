@@ -160,17 +160,67 @@ class Project extends Engine
     }
 
     /**
-     * Returns the boot state of the project.
+     * Returns install status details.
      *
-     * @return boolean TRUE if project is set to run at boot
-     * @throws Engine_Exception
+     * @return array status information
+     * @throws Exception
      */
 
-    public function get_boot_state()
+    public function get_install_status()
     {
         clearos_profile(__METHOD__, __LINE__);
 
-        return FALSE;
+        // Get docker image status
+        //------------------------
+
+        $docker = new Docker();
+        $installed_images = $docker->get_images($this->details['base_project']);
+        $required_images = $this->details['images'];
+
+        $latest_timestamp = 0;
+        $latest_image = '';
+        $installed_count = 0;
+// FIXME div by 0
+        $required_count = count($required_images);
+
+        foreach ($required_images as $tag => $translation) {
+            // TODO: there must be a better way to detect a tag with a default registry
+            if (!preg_match('/.*\..*\//', $tag))
+                $tag = 'docker.io/' . $tag;
+
+            if (array_key_exists($tag, $installed_images)) {
+                $installed_count++;
+                if ($installed_images[$tag]['created'] > $latest_timestamp) {
+                    $latest_timestamp = $installed_images[$tag]['created'];
+                }
+            }
+        }
+
+        $progress = ($installed_count / $required_count) * 100;
+
+        if ($progress == 100) {
+            $result = array(
+                'code' => 1000,
+                'progress' => 100,
+                'details' => lang('base_complete')
+            );
+        } else {
+            if ($this->is_pull_running()) {
+                $result = array(
+                    'code' => 2000,
+                    'progress' => $progress,
+                    'details' => lang('docker_download_help')
+                );
+            } else {
+                $result = array(
+                    'code' => 3000,
+                    'progress' => 0,
+                    'details' => '',
+                );
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -261,6 +311,74 @@ class Project extends Engine
             $status = self::STATUS_RUNNING;
 
         return $status;
+    }
+
+    /**
+     * Returns install status.
+     *
+     * @return array status information
+     * @throws Exception
+     */
+
+    public function is_installed()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $status = $this->get_install_status();
+
+        if ($status['progress'] == 100)
+            return TRUE;
+        else
+            return FALSE;
+    }
+
+    /**
+     * Returns status of Docker pull.
+     *
+     * @return array status information
+     * @throws Exception
+     */
+
+    public function is_pull_running()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $output = [];
+
+        try {
+            $shell = new Shell();
+            $shell->execute('/usr/bin/ps', 'ax');
+            $output = $shell->get_output();
+        } catch (Exception $e) {
+            // Not fatal
+        }
+
+        foreach ($output as $line) {
+            if (preg_match('/docker/', $line) && preg_match('/pull/', $line))
+                return TRUE;
+        }
+
+        return FALSE;
+    }
+
+    /**
+     * Starts docker pull for project.
+     *
+     * @return void
+     * @throws Engine_Exception
+     */
+
+    public function pull()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        $options['background'] = TRUE;
+
+        $shell = new Shell();
+        $shell->execute(self::COMMAND_COMPOSE, '-f ' . $this->details['docker_compose_file'] . ' pull', TRUE, $options);
+
+        // Lame, but we need to give docker-compose some time
+        sleep(5);
     }
 
     /**

@@ -86,10 +86,6 @@ $(document).ready(function() {
             clearosStartProject(clearos_project_name);
         }
     });
-
-    // Main
-    //-----
-
 });
 
 ///////////////////////////////////////////////////////////////////////////
