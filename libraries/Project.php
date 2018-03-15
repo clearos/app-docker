@@ -214,7 +214,7 @@ class Project extends Engine
             } else {
                 $result = array(
                     'code' => 3000,
-                    'progress' => 0,
+                    'progress' => $progress,
                     'details' => '',
                 );
             }
@@ -421,9 +421,16 @@ class Project extends Engine
     {
         clearos_profile(__METHOD__, __LINE__);
 
+        $docker = new Docker();
+
+        if (!$docker->get_running_state())
+            return;
+
         try {
+            $options['validate_exit_code'] = FALSE;
+
             $shell = new Shell();
-            $shell->execute(self::COMMAND_COMPOSE, '-f ' . $compose_file . ' restart ' . $container, TRUE);
+            $shell->execute(self::COMMAND_COMPOSE, '-f ' . $compose_file . ' restart ' . $container, TRUE, $options);
         } catch (Exception $e) {
             // Not fatal
         }
