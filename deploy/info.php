@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'docker';
-$app['version'] = '2.5.15';
+$app['version'] = '2.5.16';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -65,6 +65,11 @@ $app['core_file_manifest'] = array(
     'clearos-compose'=> array(
         'target' => '/usr/sbin/clearos-compose',
         'mode' => '0755'
+    ),
+    'docker.conf' => array(
+        'target' => '/etc/clearos/docker.conf',
+        'config' => TRUE,
+        'config_params' => 'noreplace',
     ),
 );
 

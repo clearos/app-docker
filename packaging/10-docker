@@ -1,52 +1,70 @@
-# Docker interfaces
-#------------------
+# Check firewall flag
+#--------------------
 
-DOCKER_INTERFACES=`ip addr | grep ^[0-9] | awk '{ print $2 }' | sed 's/:$//' | grep ^br-`
-DOCKER_INTERFACES="docker0 $DOCKER_INTERFACES"
+RUN_HOOK=yes
 
-# Docker chains
+if [ -e /etc/clearos/firewall.d/10-docker ]; then
+    CHECK=`grep -i "^enable_firewall[[:space:]]*=[[:space:]]*no" /etc/clearos/docker.conf 2>/dev/null`
+    if [ -n "$CHECK" ]; then
+        RUN_HOOK=no
+    fi
+fi
+
+# Firewall hook
 #--------------
 
-$IPTABLES -t nat -N DOCKER 2>/dev/null
-$IPTABLES -t filter -N DOCKER 2>/dev/null
-$IPTABLES -t filter -N DOCKER-ISOLATION 2>/dev/null
+if [ "$RUN_HOOK" == "yes" ]; then
 
-# NAT table
-#----------
+    # Docker interfaces
+    #------------------
 
-$IPTABLES -t nat -A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
-$IPTABLES -t nat -A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
-for IFACE in $DOCKER_INTERFACES; do
-    IFACE_NETWORK=`ip addr show $IFACE | grep ^[[:space:]]*inet[[:space:]] | awk '{ print $2 }'`
-    $IPTABLES -t nat -A POSTROUTING -s $IFACE_NETWORK ! -o $IFACE -j MASQUERADE
-done
-for IFACE in $DOCKER_INTERFACES; do
-    $IPTABLES -t nat -A DOCKER -i $IFACE -j RETURN
-done
+    DOCKER_INTERFACES=`ip addr | grep ^[0-9] | awk '{ print $2 }' | sed 's/:$//' | grep ^br-`
+    DOCKER_INTERFACES="docker0 $DOCKER_INTERFACES"
 
-# Filter table
-#-------------
+    # Docker chains
+    #--------------
 
-$IPTABLES -t filter -A FORWARD -j DOCKER-ISOLATION
-for IFACE in $DOCKER_INTERFACES; do
-    $IPTABLES -t filter -A FORWARD -o $IFACE -j DOCKER
-    $IPTABLES -t filter -A FORWARD -o $IFACE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-    $IPTABLES -t filter -A FORWARD -i $IFACE ! -o $IFACE -j ACCEPT
-    $IPTABLES -t filter -A FORWARD -i $IFACE -o $IFACE -j ACCEPT
-done
+    $IPTABLES -t nat -N DOCKER 2>/dev/null
+    $IPTABLES -t filter -N DOCKER 2>/dev/null
+    $IPTABLES -t filter -N DOCKER-ISOLATION 2>/dev/null
 
-for IFACE_OUTER in $DOCKER_INTERFACES; do
-    for IFACE_INNER in $DOCKER_INTERFACES; do
-        if [ "$IFACE_INNER" != "$IFACE_OUTER" ]; then
-            $IPTABLES -A DOCKER-ISOLATION -i $IFACE_INNER -o $IFACE_OUTER -j DROP
-        fi
+    # NAT table
+    #----------
+
+    $IPTABLES -t nat -A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
+    $IPTABLES -t nat -A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
+    for IFACE in $DOCKER_INTERFACES; do
+        IFACE_NETWORK=`ip addr show $IFACE | grep ^[[:space:]]*inet[[:space:]] | awk '{ print $2 }'`
+        $IPTABLES -t nat -A POSTROUTING -s $IFACE_NETWORK ! -o $IFACE -j MASQUERADE
     done
-done
+    for IFACE in $DOCKER_INTERFACES; do
+        $IPTABLES -t nat -A DOCKER -i $IFACE -j RETURN
+    done
 
-$IPTABLES -t filter -A DOCKER-ISOLATION -j RETURN
+    # Filter table
+    #-------------
 
-for IFACE in $DOCKER_INTERFACES; do
-    $IPTABLES -t filter -A INPUT -i $IFACE -j ACCEPT
-    $IPTABLES -t filter -A OUTPUT -o $IFACE -j ACCEPT
-    $IPTABLES -t filter -A FORWARD -i $IFACE -j ACCEPT
-done
+    $IPTABLES -t filter -A FORWARD -j DOCKER-ISOLATION
+    for IFACE in $DOCKER_INTERFACES; do
+        $IPTABLES -t filter -A FORWARD -o $IFACE -j DOCKER
+        $IPTABLES -t filter -A FORWARD -o $IFACE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+        $IPTABLES -t filter -A FORWARD -i $IFACE ! -o $IFACE -j ACCEPT
+        $IPTABLES -t filter -A FORWARD -i $IFACE -o $IFACE -j ACCEPT
+    done
+
+    for IFACE_OUTER in $DOCKER_INTERFACES; do
+        for IFACE_INNER in $DOCKER_INTERFACES; do
+            if [ "$IFACE_INNER" != "$IFACE_OUTER" ]; then
+                $IPTABLES -A DOCKER-ISOLATION -i $IFACE_INNER -o $IFACE_OUTER -j DROP
+            fi
+        done
+    done
+
+    $IPTABLES -t filter -A DOCKER-ISOLATION -j RETURN
+
+    for IFACE in $DOCKER_INTERFACES; do
+        $IPTABLES -t filter -A INPUT -i $IFACE -j ACCEPT
+        $IPTABLES -t filter -A OUTPUT -o $IFACE -j ACCEPT
+        $IPTABLES -t filter -A FORWARD -i $IFACE -j ACCEPT
+    done
+fi

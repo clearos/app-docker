@@ -1,11 +1,13 @@
 
 Name: app-docker
 Epoch: 1
-Version: 2.5.15
+Version: 2.5.16
 Release: 1%{dist}
 Summary: Docker
 License: GPLv3
-Group: ClearOS/Apps
+Group: Applications/Apps
+Packager: ClearFoundation
+Vendor: ClearFoundation
 Source: %{name}-%{version}.tar.gz
 Buildarch: noarch
 Requires: %{name}-core = 1:%{version}-%{release}
@@ -16,9 +18,9 @@ Requires: app-network
 Docker is a software technology providing operating-system-level virtualization also known as containers.
 
 %package core
-Summary: Docker - Core
+Summary: Docker - API
 License: LGPLv3
-Group: ClearOS/Libraries
+Group: Applications/API
 Requires: app-base-core
 Requires: app-network-core >= 1:2.4.6
 Requires: app-mail-routing-core
@@ -45,6 +47,7 @@ install -d -m 0755 %{buildroot}/var/clearos/docker/backup
 install -d -m 0755 %{buildroot}/var/clearos/docker/project
 install -D -m 0644 packaging/10-docker %{buildroot}/etc/clearos/firewall.d/10-docker
 install -D -m 0755 packaging/clearos-compose %{buildroot}/usr/sbin/clearos-compose
+install -D -m 0644 packaging/docker.conf %{buildroot}/etc/clearos/docker.conf
 install -D -m 0644 packaging/docker.php %{buildroot}/var/clearos/base/daemon/docker.php
 
 %post
@@ -93,4 +96,5 @@ exit 0
 /usr/clearos/apps/docker/libraries
 /etc/clearos/firewall.d/10-docker
 /usr/sbin/clearos-compose
+%config(noreplace) /etc/clearos/docker.conf
 /var/clearos/base/daemon/docker.php
