@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 $app['basename'] = 'docker';
-$app['version'] = '2.5.18';
+$app['version'] = '2.5.20';
 $app['release'] = '1';
 $app['vendor'] = 'ClearFoundation';
 $app['packager'] = 'ClearFoundation';
@@ -46,6 +46,7 @@ $app['core_requires'] = array(
     'app-network-core >= 1:2.4.6',
     'app-mail-routing-core',
     'app-firewall-core >= 1:2.4.17',
+    'app-suva-core',
     'curl',
     'docker',
     'docker-compose',

@@ -1,7 +1,7 @@
 
 Name: app-docker
 Epoch: 1
-Version: 2.5.18
+Version: 2.5.20
 Release: 1%{dist}
 Summary: Docker
 License: GPLv3
@@ -25,6 +25,7 @@ Requires: app-base-core
 Requires: app-network-core >= 1:2.4.6
 Requires: app-mail-routing-core
 Requires: app-firewall-core >= 1:2.4.17
+Requires: app-suva-core
 Requires: curl
 Requires: docker
 Requires: docker-compose

@@ -62,6 +62,7 @@ use \clearos\apps\base\Shell as Shell;
 use \clearos\apps\docker\Docker as Docker;
 use \clearos\apps\docker\Project as Project;
 use \clearos\apps\firewall\Firewall as Firewall;
+use \clearos\apps\suva\Suva as Suva;
 
 clearos_load_library('base/Engine');
 clearos_load_library('base/File');
@@ -69,6 +70,7 @@ clearos_load_library('base/Shell');
 clearos_load_library('docker/Docker');
 clearos_load_library('docker/Project');
 clearos_load_library('firewall/Firewall');
+clearos_load_library('suva/Suva');
 
 // Exceptions
 //-----------
@@ -100,6 +102,7 @@ class Project extends Engine
     // C O N S T A N T S
     ///////////////////////////////////////////////////////////////////////////////
 
+    const COMMAND_DOCKER = '/usr/bin/docker';
     const COMMAND_COMPOSE = '/usr/bin/docker-compose';
     const COMMAND_CLEAROS_COMPOSE = '/usr/sbin/clearos-compose';
     const STATE_RUNNING = 'Running';
@@ -180,7 +183,6 @@ class Project extends Engine
         $latest_timestamp = 0;
         $latest_image = '';
         $installed_count = 0;
-// FIXME div by 0
         $required_count = count($required_images);
 
         foreach ($required_images as $tag => $translation) {
@@ -372,6 +374,8 @@ class Project extends Engine
     {
         clearos_profile(__METHOD__, __LINE__);
 
+        $this->_login();
+
         $options['background'] = TRUE;
 
         $shell = new Shell();
@@ -511,9 +515,32 @@ class Project extends Engine
     ///////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Performs registry login.
+     *
+     * @return void
+     * @throws Engine_Exception, Validation_Exception
+     */
+
+    public function _login()
+    {
+        clearos_profile(__METHOD__, __LINE__);
+
+        if (isset($this->details['clearsdn_auth']) && $this->details['clearsdn_auth']) {
+            $registry = (isset($this->details['registry'])) ? $this->details['registry'] : '';
+            $suva = new Suva();
+            $hostkey = $suva->get_hostkey();
+            $username = '-u '. $hostkey;
+            $password = '-p notused';
+
+            $shell = new Shell();
+            $shell->execute(self::COMMAND_DOCKER, 'login ' . $username . ' ' . $password . ' ' . $registry, TRUE);
+        }
+    }
+
+    /**
      * Sets running state of the project via wrapper.
      *
-     * This should only be called by the 
+     * This should only be called by the wrapper.
      *
      * @param boolean $state desired running state
      *
@@ -541,8 +568,8 @@ class Project extends Engine
         // Docker login
         //-------------
 
-        // FIXME
-
+        if ($state)
+            $this->_login();
 
         // Docker compose start/stop
         //--------------------------
